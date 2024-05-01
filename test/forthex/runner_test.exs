@@ -6,7 +6,7 @@ defmodule Forthex.RunnerTest do
   alias Forthex.Interpreter.State
   alias Forthex.Runner
 
-  @stars_file Path.expand("test/forth_sources/stars.forth")
+  @stars_file Path.expand("forth_scripts/stars.forth")
 
   describe "run/1" do
     test "prints on stdio" do
