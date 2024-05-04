@@ -1,9 +1,6 @@
 defmodule Forthex.RunnerTest do
-  use ExUnit.Case
+  use Forthex.Case
 
-  import ExUnit.CaptureIO
-
-  alias Forthex.Interpreter.State
   alias Forthex.Runner
 
   @stars_file Path.expand("forth_scripts/stars.forth")
