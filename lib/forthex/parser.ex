@@ -79,21 +79,36 @@ defmodule Forthex.Parser do
   end
 
   defp parse_word_opening(token, tokens, ast) do
-    %{body: body, tokens_rest: tokens_rest} = do_parse(tokens, [])
-    node = WordDefinition.new(token.value, body)
-    do_parse(tokens_rest, [node | ast])
+    case do_parse(tokens, []) do
+      %{body: body, tokens_rest: tokens_rest} ->
+        node = WordDefinition.new(token.value, body)
+        do_parse(tokens_rest, [node | ast])
+
+      _ ->
+        raise "Invalid word definition"
+    end
   end
 
   defp parse_begin_loop_opening(_token, tokens, ast) do
-    %{body: body, tokens_rest: tokens_rest} = do_parse(tokens, [])
-    node = BeginUntilLoop.new(body)
-    do_parse(tokens_rest, [node | ast])
+    case do_parse(tokens, []) do
+      %{body: body, tokens_rest: tokens_rest} ->
+        node = BeginUntilLoop.new(body)
+        do_parse(tokens_rest, [node | ast])
+
+      _ ->
+        raise "Invalid BEGIN ... UNTIL loop"
+    end
   end
 
   defp parse_do_loop_opening(_token, tokens, ast) do
-    %{body: body, tokens_rest: tokens_rest} = do_parse(tokens, [])
-    node = DoLoop.new(body)
-    do_parse(tokens_rest, [node | ast])
+    case do_parse(tokens, []) do
+      %{body: body, tokens_rest: tokens_rest} ->
+        node = DoLoop.new(body)
+        do_parse(tokens_rest, [node | ast])
+
+      _ ->
+        raise "Invalid DO ... LOOP loop"
+    end
   end
 
   defp parse_if_opening(_token, tokens, ast) do
@@ -103,9 +118,17 @@ defmodule Forthex.Parser do
         do_parse(tokens_rest, [node | ast])
 
       %{body_before_else: body_before_else, tokens_rest: tokens_rest} ->
-        %{body: body, tokens_rest: tokens_rest} = do_parse(tokens_rest, [])
-        node = IfExpression.new(body_before_else, body)
-        do_parse(tokens_rest, [node | ast])
+        case do_parse(tokens_rest, []) do
+          %{body: body, tokens_rest: tokens_rest} ->
+            node = IfExpression.new(body_before_else, body)
+            do_parse(tokens_rest, [node | ast])
+
+          _ ->
+            raise "Invalid IF ... ELSE ... THEN conditional"
+        end
+
+      _ ->
+        raise "Invalid IF ... THEN conditional"
     end
   end
 
