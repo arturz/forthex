@@ -16,9 +16,6 @@ defmodule Forthex.Interpreter.Dictionary.Helpers do
     state
   end
 
-  def to_forth_bool(false), do: 0
-  def to_forth_bool(true), do: 1
-
   def raise_stack_underflow do
     raise("Stack underflow!")
   end
