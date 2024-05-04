@@ -1,12 +1,12 @@
 # Forthex
 
-This is a simple [FORTH](https://www.forth.com/forth/) stack-based programming language interpretter written in Elixir.
+This is a simple [FORTH](https://www.forth.com/forth/) stack-based programming language interpreter written in Elixir.
 
 # Getting started
 
-Forthex contains mix task for interpreting Forth script files and a basic REPL (Read-Eval-Print Loop).
+Forthex contains a mix task for interpreting Forth script files and a basic REPL (Read-Eval-Print Loop).
 
-Create a file `fibonacci.forth` inside the Forthex directory with content:
+Create a file `fibonacci.forth` inside the Forthex directory with an example content:
 
 ```forth
 : FIBONACCI ( i -- n_1..n_i )
@@ -18,34 +18,34 @@ Create a file `fibonacci.forth` inside the Forthex directory with content:
 10 FIBONACCI
 ```
 
-When you run `mix x fibonacci.forth`, it calculates and prints 10 first fibonacci sequence numbers.
+When you run `mix x fibonacci.forth`, it calculates and prints 10 first Fibonacci sequence numbers.
 
-In the same fashion you can run `mix x` to start a simple REPL and provide all words and commands by hand.
+In the same fashion, you can run `mix x` to start a simple REPL and provide all words and commands by hand.
 
 # Supported syntax
 
 - loops:
-  - `DO .. LOOP`
-  - `BEGIN .. UNTIL`
-- contitionals:
-  - `IF .. THEN`
-  - `IF .. ELSE .. THEN`
+  - `DO ... LOOP`
+  - `BEGIN ... UNTIL`
+- conditionals:
+  - `IF ... THEN`
+  - `IF ... ELSE ... THEN`
 - comments: `( this is a comment )`
 - words (functions) declaration: `: SQUARE   DUP * ;`
 - standard output prints: `." Hello world!"`
 
 # Supported words
 
-- stack words: `.`, `.s`, `DUP`, `DROP`, `SWAP`, `OVER`, `ROT`, `2DUP`, `2DROP`, `2SWAP`
-- math operands: `+`, `-`, `*`, `/`
-- logic operands: `<`, `>`, `=`, `!=`, `<=`, `>=`
+- stack words: `.`, `.s`, `DUP`, `DROP`, `SWAP`, `OVER`, `ROT`, `2DUP`, `2DROP`, `2SWAP`, `2OVER`, `CLEAR`
+- math operators: `+`, `-`, `*`, `/`, `ABS`
+- logic operators: `<`, `>`, `=`, `<>`, `<=`, `>=`, `AND`, `OR`
 - IO operations: `EMIT`, `SPACES`, `ACCEPT` (reads a number and pushes onto the stack)
 - return stack operations: `i` (loop index), `j` (outer loop index)
 - miscellaneous operations: `RANDOM`, `WORDS`
 
 # Technical details
 
-Forthex consist of three parts: lexer, parser and interpreter.
+Forthex consists of three parts: lexer, parser and interpreter.
 
 ## Lexer
 
@@ -76,11 +76,11 @@ lexer returns a list of tokens:
 ]
 ```
 
-During this process basic syntax rules are enforced.
+During this process, basic syntax rules are enforced.
 
 ## Parser
 
-Parser receives a list of tokens and builds an Abstract Syntax Tree - AST.
+The parser receives a list of tokens and builds an Abstract Syntax Tree that looks like this:
 
 ```elixir
 %Forthex.Ast.RootNode{
@@ -112,8 +112,15 @@ Parser receives a list of tokens and builds an Abstract Syntax Tree - AST.
 }
 ```
 
-AST building blocks are Nodes, full list is available under the namespace `Forthex.Ast`.
+AST building blocks are named nodes, here is a brief overview of a few of them:
+
+- `RootNode` - as the name suggests, a starting point for all other nodes
+- `NodesBlock` - container for nested nodes
+- `BeginUntilLoop` and `DoLoop` - contain blocks evaluated on each loop iteration
+- `IfExpression` - contains a block that is evaluated when a truthy value lies on top of the stack and an optional block that is evaluated otherwise
+
+A full list is available under the namespace `Forthex.Ast`. Every node also implements the `Node` protocol for serialization and debugging purposes.
 
 ## Interpreter
 
-Interpreter creates an initial state with predefined words and walks through the AST, evaluating each node according to its type and rules of the FORTH language.
+The interpreter creates an initial state with predefined words and walks through the AST, evaluating each node according to its type and rules of the FORTH language.
