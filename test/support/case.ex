@@ -3,10 +3,12 @@ defmodule Forthex.Case do
 
   defmacro __using__(_opts) do
     quote do
-      use ExUnit.Case
+      use ExUnit.Case, async: true
 
       import ExUnit.CaptureIO
       import ExUnit.CaptureLog
+
+      import Forthex.Utils.LogicUtils
 
       alias Forthex.Interpreter.State
 
@@ -37,10 +39,6 @@ defmodule Forthex.Case do
         %State{stack: [value]} = function.(state)
         assert falsy?(value)
       end
-
-      def falsy?(0), do: true
-      def falsy?(_value), do: false
-      def truthy?(value), do: not falsy?(value)
     end
   end
 end
