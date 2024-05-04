@@ -32,4 +32,10 @@ defmodule Forthex.Interpreter.Dictionary.MathWords do
     {value1, state} = pop(state)
     push(state, div(value1, value2))
   end
+
+  @doc "( n -- n )"
+  def absolute(%State{} = state) do
+    {value, state} = pop(state)
+    push(state, abs(value))
+  end
 end

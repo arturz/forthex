@@ -82,6 +82,18 @@ defmodule Forthex.Interpreter.Dictionary.StackWords do
     |> push(value1)
   end
 
+  @doc "( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2)"
+  def two_over(%State{} = old_state) do
+    {_value4, state} = pop(old_state)
+    {_value3, state} = pop(state)
+    {value2, state} = pop(state)
+    {value1, _state} = pop(state)
+
+    old_state
+    |> push(value1)
+    |> push(value2)
+  end
+
   @doc "( x1 x2 x3 -- x2 x3 x1 )"
   def rot(%State{} = state) do
     {value3, state} = pop(state)
@@ -92,5 +104,9 @@ defmodule Forthex.Interpreter.Dictionary.StackWords do
     |> push(value2)
     |> push(value3)
     |> push(value1)
+  end
+
+  def clear(%State{} = state) do
+    Map.put(state, :stack, [])
   end
 end
