@@ -43,7 +43,15 @@ defmodule Forthex.Interpreter.Dictionary.StackWordsTest do
     assert_stack_transformation([1, 2], [2, 1, 2], &StackWords.over/1)
   end
 
+  test "two_over/1" do
+    assert_stack_transformation([1, 2, 3, 4], [3, 4, 1, 2, 3, 4], &StackWords.two_over/1)
+  end
+
   test "rot/1" do
     assert_stack_transformation([1, 2, 3], [3, 1, 2], &StackWords.rot/1)
+  end
+
+  test "clear/1" do
+    assert_stack_transformation([1, 2, 3], [], &StackWords.clear/1)
   end
 end
