@@ -1,5 +1,6 @@
 defmodule Forthex.LexerTest do
-  use ExUnit.Case
+  use Forthex.Case
+
   alias Forthex.Lexer
   alias Forthex.Token
 
@@ -57,7 +58,7 @@ defmodule Forthex.LexerTest do
              ]
     end
 
-    test "handles if, else, and then correctly" do
+    test "handles IF ... ELSE ... THEN correctly" do
       assert Lexer.tokenize("1 2 if dup else drop then") == [
                %Token{type: :call_or_literal, value: "1"},
                %Token{type: :call_or_literal, value: "2"},
@@ -70,7 +71,7 @@ defmodule Forthex.LexerTest do
              ]
     end
 
-    test "handles begin and until correctly" do
+    test "handles BEGIN ... UNTIL loop correctly" do
       assert Lexer.tokenize("begin 1 dup 2 < until") == [
                %Token{type: :begin},
                %Token{type: :call_or_literal, value: "1"},
@@ -80,6 +81,36 @@ defmodule Forthex.LexerTest do
                %Token{type: :until},
                %Token{type: :eof}
              ]
+    end
+
+    test "handles DO ... LOOP loop correctly" do
+      assert Lexer.tokenize("5 0 do i . loop") == [
+               %Token{type: :call_or_literal, value: "5"},
+               %Token{type: :call_or_literal, value: "0"},
+               %Token{type: :do},
+               %Token{type: :call_or_literal, value: "i"},
+               %Token{type: :call_or_literal, value: "."},
+               %Token{type: :loop},
+               %Token{type: :eof}
+             ]
+    end
+
+    test "raises on missing word name" do
+      assert_raise(RuntimeError, fn ->
+        Lexer.tokenize(":   dup * ; 5 square")
+      end)
+    end
+
+    test "raises on missing print string close" do
+      assert_raise(RuntimeError, fn ->
+        Lexer.tokenize(".\" Hello, World! 1 2 +")
+      end)
+    end
+
+    test "raises on missing comment close" do
+      assert_raise(RuntimeError, fn ->
+        Lexer.tokenize("(this is some comment 1 2 +")
+      end)
     end
   end
 end
