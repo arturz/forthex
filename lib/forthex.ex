@@ -1,18 +1,5 @@
 defmodule Forthex do
   @moduledoc """
-  Documentation for `Forthex`.
+  Forth interpreter written in Elixir.
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Forthex.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
