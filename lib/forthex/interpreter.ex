@@ -4,6 +4,7 @@ defmodule Forthex.Interpreter do
   require Logger
 
   import Forthex.Interpreter.Dictionary.Helpers
+  import Forthex.Utils.LogicUtils
 
   alias Forthex.Interpreter.DictionaryEntry
 
@@ -43,26 +44,15 @@ defmodule Forthex.Interpreter do
 
   def interpret(
         [%CallOrLiteral{value: value} | nodes],
-        %State{stack: stack, dictionary: dictionary} = state
+        %State{dictionary: dictionary} = state
       ) do
     value = String.downcase(value)
 
     state =
       if Map.has_key?(dictionary, value) do
-        if DictionaryEntry.native?(dictionary[value]) do
-          dictionary[value] |> DictionaryEntry.get_reference() |> apply([state])
-        else
-          dictionary[value] |> DictionaryEntry.get_body() |> interpret(state)
-        end
+        interpret_word_call(state, value)
       else
-        case Integer.parse(value) do
-          {int, ""} ->
-            Map.put(state, :stack, [int | stack])
-
-          _ ->
-            raise("Not in dictionary and cannot parse to integer: #{inspect(value)}")
-            state
-        end
+        interpret_literal(state, value)
       end
 
     interpret(nodes, state)
@@ -75,7 +65,7 @@ defmodule Forthex.Interpreter do
     {value, state} = pop(state)
 
     state =
-      if value != 0 do
+      if truthy?(value) do
         interpret(then_body, state)
       else
         interpret(else_body, state)
@@ -88,7 +78,7 @@ defmodule Forthex.Interpreter do
         [%PrintStringExpression{value: value} | nodes],
         state
       ) do
-    Logger.info(value <> " ")
+    IO.write(value)
     interpret(nodes, state)
   end
 
@@ -99,11 +89,11 @@ defmodule Forthex.Interpreter do
     {from_inclusive, state} = pop(state)
     {to_exclusive, state} = pop(state)
 
-    return_stack =
-      case state.return_stack do
-        [] -> [-1]
-        rest -> [-1 | rest]
-      end
+    if from_inclusive >= to_exclusive do
+      raise("In '( n1 n2 -- ... ) DO ... LOOP' n1 must be greater than n2")
+    end
+
+    return_stack = [from_inclusive - 1 | state.return_stack]
 
     state = Map.put(state, :return_stack, return_stack)
 
@@ -128,11 +118,7 @@ defmodule Forthex.Interpreter do
         [%BeginUntilLoop{body: body} | nodes],
         %State{} = state
       ) do
-    return_stack =
-      case state.return_stack do
-        [] -> [-1]
-        rest -> [-1 | rest]
-      end
+    return_stack = [-1 | state.return_stack]
 
     state = Map.put(state, :return_stack, return_stack)
 
@@ -149,9 +135,12 @@ defmodule Forthex.Interpreter do
 
         state = interpret(body, state)
 
-        case pop(state) do
-          {0, state} -> {:cont, state}
-          {_, state} -> {:halt, state}
+        {value, state} = pop(state)
+
+        if truthy?(value) do
+          {:halt, state}
+        else
+          {:cont, state}
         end
       end)
 
@@ -167,5 +156,24 @@ defmodule Forthex.Interpreter do
 
   def interpret(nil, state) do
     state
+  end
+
+  defp interpret_word_call(%State{dictionary: dictionary} = state, word_name) do
+    if DictionaryEntry.native?(dictionary[word_name]) do
+      dictionary[word_name] |> DictionaryEntry.get_reference() |> apply([state])
+    else
+      dictionary[word_name] |> DictionaryEntry.get_body() |> interpret(state)
+    end
+  end
+
+  def interpret_literal(%State{stack: stack} = state, value) do
+    case Integer.parse(value) do
+      {int, ""} ->
+        Map.put(state, :stack, [int | stack])
+
+      _ ->
+        raise("Cannot parse to integer: #{inspect(value)}")
+        state
+    end
   end
 end
