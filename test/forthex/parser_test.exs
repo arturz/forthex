@@ -1,5 +1,6 @@
 defmodule Forthex.ParserTest do
-  use ExUnit.Case
+  use Forthex.Case
+
   alias Forthex.Parser
 
   describe "parse/1" do
@@ -103,5 +104,59 @@ defmodule Forthex.ParserTest do
                ]
              }
     end
+  end
+
+  test "builds deep tree" do
+    n = 1_000_000
+
+    List.duplicate(%Forthex.Token{type: :if, value: nil}, n)
+    |> Kernel.++(List.duplicate(%Forthex.Token{type: :then, value: ""}, n))
+    |> Parser.parse()
+  end
+
+  test "raises on unclosed IF ... THEN conditional" do
+    assert_raise(RuntimeError, fn ->
+      Parser.parse([
+        %Forthex.Token{type: :if, value: nil},
+        %Forthex.Token{type: :eof, value: nil}
+      ])
+    end)
+  end
+
+  test "raises on unclosed IF ... ELSE ... THEN conditional" do
+    assert_raise(RuntimeError, fn ->
+      Parser.parse([
+        %Forthex.Token{type: :if, value: nil},
+        %Forthex.Token{type: :else, value: nil},
+        %Forthex.Token{type: :eof, value: nil}
+      ])
+    end)
+  end
+
+  test "raises on unclosed BEGIN ... UNTIL loop" do
+    assert_raise(RuntimeError, fn ->
+      Parser.parse([
+        %Forthex.Token{type: :begin, value: nil},
+        %Forthex.Token{type: :eof, value: nil}
+      ])
+    end)
+  end
+
+  test "raises on unclosed DO ... LOOP loop" do
+    assert_raise(RuntimeError, fn ->
+      Parser.parse([
+        %Forthex.Token{type: :do, value: nil},
+        %Forthex.Token{type: :eof, value: nil}
+      ])
+    end)
+  end
+
+  test "raises on unclosed word definition" do
+    assert_raise(RuntimeError, fn ->
+      Parser.parse([
+        %Forthex.Token{type: :word_opening, value: "TEST"},
+        %Forthex.Token{type: :eof, value: nil}
+      ])
+    end)
   end
 end
