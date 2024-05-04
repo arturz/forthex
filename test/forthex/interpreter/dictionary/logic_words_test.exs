@@ -34,4 +34,18 @@ defmodule Forthex.Interpreter.Dictionary.LogicWordsTest do
     assert_puts_true_on_stack([2, 1], &LogicWords.smaller_or_equal/1)
     assert_puts_false_on_stack([1, 2], &LogicWords.smaller_or_equal/1)
   end
+
+  test "forth_and/1" do
+    assert_puts_true_on_stack([1, 1], &LogicWords.forth_and/1)
+    assert_puts_false_on_stack([1, 0], &LogicWords.forth_and/1)
+    assert_puts_false_on_stack([0, 1], &LogicWords.forth_and/1)
+    assert_puts_false_on_stack([0, 0], &LogicWords.forth_and/1)
+  end
+
+  test "forth_or/1" do
+    assert_puts_true_on_stack([1, 1], &LogicWords.forth_or/1)
+    assert_puts_true_on_stack([1, 0], &LogicWords.forth_or/1)
+    assert_puts_true_on_stack([0, 1], &LogicWords.forth_or/1)
+    assert_puts_false_on_stack([0, 0], &LogicWords.forth_or/1)
+  end
 end
