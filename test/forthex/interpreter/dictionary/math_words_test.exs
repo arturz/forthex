@@ -18,4 +18,9 @@ defmodule Forthex.Interpreter.Dictionary.MathWordsTest do
   test "divide/1" do
     assert_stack_transformation([3, 6], [2], &MathWords.divide/1)
   end
+
+  test "absolute/1" do
+    assert_stack_transformation([-1], [1], &MathWords.absolute/1)
+    assert_stack_transformation([1], [1], &MathWords.absolute/1)
+  end
 end
