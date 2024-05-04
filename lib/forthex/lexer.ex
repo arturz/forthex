@@ -45,11 +45,11 @@ defmodule Forthex.Lexer do
   defp word_closing?(_char), do: false
 
   defp read_comment(["(" | chars], tokens) do
-    {comment, [")" | rest]} = Enum.split_while(chars, fn char -> not comment_end?(char) end)
-
-    if comment == [] do
-      raise "Missing comment close"
-    end
+    {comment, rest} =
+      case Enum.split_while(chars, fn char -> not comment_end?(char) end) do
+        {_comment, []} -> raise "Missing comment close"
+        {comment, [")" | rest]} -> {comment, rest}
+      end
 
     comment = Enum.join(comment)
 
@@ -58,12 +58,14 @@ defmodule Forthex.Lexer do
   end
 
   defp read_print_string([".", "\"", " " | chars], tokens) do
-    {print_string, ["\"" | rest]} =
-      Enum.split_while(chars, fn char -> not print_string_end?(char) end)
+    {print_string, rest} =
+      case Enum.split_while(chars, fn char -> not print_string_end?(char) end) do
+        {_print_string, []} ->
+          raise "Missing print string close"
 
-    if print_string == [] do
-      raise "Missing print string close"
-    end
+        {print_string, ["\"" | rest]} ->
+          {print_string, rest}
+      end
 
     print_string = Enum.join(print_string)
 
